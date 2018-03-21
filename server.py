@@ -11,11 +11,14 @@ class server:
     def __init__(self):
         print("starting the server")
         self._lock = threading.Lock()
-        port = 10000
+        port = 10020
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.bind(('', port))
         huc = threading.Thread(target=self.handle_user_connection)
         huc.start()
+        self.listusers = []
+        self.room = []
+        self.listroom = [self.room]
 
     def handle_user_connection(self):
         while True:
@@ -24,7 +27,8 @@ class server:
             acu = threading.Thread(target=self.add_connected_user,
                                    kwargs=({"sock": sock, "addr": addr}))
             acu.start()
-            print('Connected with ' + addr[0] + ':' + str(addr[1]))
+            print(self.listusers)
+            # print('Connected with ' + addr[0] + ':' + str(addr[1]))
         self.s.close()
 
     def add_connected_user(self, sock, addr):
@@ -36,39 +40,44 @@ class server:
     def recv_handler(self, sock):
         while True:
             msg = sock.recv(1024)
-            msg.decode()
-            message_type = self.determine_message_type(msg)
-            if message_type == 1:
-                break
-            if message_type == 2:
-                self.starting_hosting(sock)
-            if message_type == 3:
+            print(msg)
+            data = json.loads(msg.decode())
+            print(data)
+            if data['message'] == "connexion":
+                print(data["data"])
+                # self.listusers.append([addr[0], addr[1]])
+                self.listusers.append(data['data'])
+            if data['message'] == "gethostlist":
                 self.return_list_of_host(sock)
-            if message_type == 4:
-                username = str(msg[13:])
-                print(username)
-                self.change_user_name(sock, msg)
-            if message_type == 5:
-                self.connectToHost()
-            if message_type != 1:
-                print(msg)
+            # if message_type == 2:
+            #     self.starting_hosting(sock)
+            # if message_type == 3:
+            #     self.return_list_of_host(sock)
+            # if message_type == 4:
+            #     username = str(msg[13:])
+            #     print(username)
+            #     self.change_user_name(sock, msg)
+            # if message_type == 5:
+            #     self.connectToHost()
+            # if message_type != 1:
+            #     print(msg)
                 # break
 
-    def determine_message_type(self, msg):
-        if not msg:
-            return 1
-        # print(msg)
-        if "/startHost" in str(msg):
-            print("hosting")
-            return 2
-        if "/gethostlist" in str(msg):
-            print("get host list")
-            return 3
-        if "/changeName" in str(msg):
-            return 4
-        if "/connectToHost" in msg:
-            return 5
-        return 6
+    # def determine_message_type(self, msg):
+    #     if not msg:
+    #         return 1
+    #     # print(msg)
+    #     if "/startHost" in str(msg):
+    #         print("hosting")
+    #         return 2
+    #     if "/gethostlist" in str(msg):
+    #         print("get host list")
+    #         return 3
+    #     if "/changeName" in str(msg):
+    #         return 4
+    #     if "/connectToHost" in str(msg):
+    #         return 5
+    #     return 6
 
     def change_user_name(self, sock, username):
         for user in self.users:
@@ -84,15 +93,19 @@ class server:
                 print("found the user")
 
     def return_list_of_host(self, sock):
-        tmp = []
-        for user in self.users:
-            if sock != user.sock:
-                if user.hosting:
-                    tmp.append(user)
-        temp_array = json.dumps(tmp)
-        print(temp_array)
+
+        # tmp = []
+        # for user in self.users:
+        #     if sock != user.sock:
+        #         if user.hosting:
+        #             tmp.append(user)
+        # temp_array = json.dumps(tmp)
+        print(self.listusers)
+        # temp_array = json.dumps(self.listusers)
+        # print(temp_array)
         print("send list of host")
-        sock.send(temp_array.encode("utf-8"))
+        sock.send(json.dumps(self.listusers).encode("utf-8"))
+        # sock.send(temp_array.encode("utf-8"))
 
     def connect_to_host(self, sock, ip, port):
         for user in self.users:

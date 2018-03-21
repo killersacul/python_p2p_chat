@@ -8,7 +8,7 @@ from tkinter import messagebox, scrolledtext, simpledialog
 
 
 class P2pChat(tk.Frame):
-
+    client = []
     def __init__(self, master=None):
 
         master.wm_title("test name")
@@ -66,7 +66,7 @@ class P2pChat(tk.Frame):
         print("changing username")
 
     def get_chat_list(self):
-        self.client.s.send("/gethostlist".encode())
+        self.client.send_data(self.client.s, "gethostlist", ['null'])
         print("getting chat list")
 
     def send_message_to_chat(self):
@@ -86,24 +86,33 @@ class P2pChat(tk.Frame):
 
 class Client:
 
-    server = ('127.0.0.1', 10000)
+    server = ('127.0.0.1', 10020)
 
     def __init__(self):
-        port = 10001
-        print("hello")
+        self.port = 10001
+        print("init")
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.su = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         ip = socket.gethostbyname(socket.gethostname())
-        while True:
-            try:
-                self.s.bind((ip, port))
-                break
-            except:
-                port += 1
+
+        self.bind_port(self.s, ip, self.port)
+        self.portU = self.port
+        self.bind_port(self.su, ip, self.portU)
+
         self.s.connect(self.server)
+        self.send_data(self.s, "connexion", ["127.0.0.1", self.portU])
         ths = threading.Thread(target=self.recv_handler_server)
+        threading.Thread(target=self.handle_user_connection)
         ths.start()
         # lc = threading.Thread(target=self.listen_connection)
         # lc.start()
+    def bind_port(self, sock, ip, port):
+        while True:
+            try:
+                sock.bind(ip, port)
+                break
+            except:
+                port += 1
 
     def listen_connection(self):
         while True:
@@ -126,8 +135,13 @@ class Client:
             temp = json.loads(msg)
             print(str(temp))
             if msg:
-                print("message from server")
-                print(msg)
+                print("message from server test")
+                for user in temp:
+                    if user[1] != self.portU:
+                        self.client.append(socket.socket(socket.AF_INET, socket.SOCK_STREAM))
+                        self.client[-1].bind('', 0)
+                        print(str(user[0]), user[1])
+                        self.client[-1].connect((user[0], user[1]))
 
     def recv_handler(self, sock):
         while True:
@@ -137,7 +151,25 @@ class Client:
                 print("message is not from server")
                 print(msg)
 
-
+    def handle_user_connection(self):
+        while True:
+            self.s.listen(5)
+            sock, addr = self.s.accept()
+            acu = threading.Thread(target=self.add_connected_user,
+                                   kwargs=({"sock": sock, "addr": addr}))
+            acu.start()
+            self.listusers.append([addr[0], addr[1]])
+            print(sock)
+            # print('Connected with ' + addr[0] + ':' + str(addr[1]))
+        self.s.close()
+    def send_data(self, sock, type_message, data):
+        sock.send(str("{\"message\": \""+str(type_message)+"\", \"data\": "+json.dumps(data)+"}").encode("utf-8"))
+    def add_connected_user(self, sock, addr):
+        print(sock, addr)
+        # new_user = User(sock, addr[0], addr[1])
+        # self.users.append(new_user)
+        # th = threading.Thread(target=self.recv_handler, kwargs={'sock': sock})
+        # th.start()
 class Chat:
 
     def __init__():
