@@ -5,7 +5,7 @@ import json
 # import sys
 import tkinter as tk
 from tkinter import messagebox, scrolledtext, simpledialog
-
+from functools import partial
 
 class P2pChat(tk.Frame):
     client = []
@@ -22,15 +22,15 @@ class P2pChat(tk.Frame):
         menubar = tk.Menu(self)
         menu = tk.Menu(menubar, tearoff=0)
         menu.add_command(label="Start hosting", command=self.start_hosting)
-        menu.add_command(label="Connect to chat", command=self.connect_to_chat)
+        menu.add_command(label="Connect to chat", command=self.connect_to_chat_window)
         menu.add_command(label="Change Username", command=self.change_username)
-        menu.add_command(label="Get list of chats", command=self.get_chat_list)
+        menu.add_command(label="Get list of chats", command=self.room_list_window)
         menu.add_separator()
         menu.add_command(label="Exit", command=self.close_app)
         menubar.add_cascade(label="Menu", menu=menu)
         self.master.config(menu=menubar)
         msg_frame = tk.Frame(self)
-        msg_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+        msg_frame.pack(side=tk.LEFT, fill=tk.Y, expand=1)
 
         msg_window = scrolledtext.ScrolledText(msg_frame, height=10, width=80)
         msg_window.pack(side=tk.TOP, fill=tk.BOTH, expand=1)
@@ -49,13 +49,59 @@ class P2pChat(tk.Frame):
         send_btn["text"] = "Send"
         send_btn["command"] = self.send_message_to_chat
         send_btn.pack(side=tk.RIGHT)
+
+        # user_list = tk.Framef
         master = self.master
+        master.bind('<Return>', self.send_message_to_chat)
+        master.bind('<KP_Enter>', self.send_message_to_chat)
         master.update()
+
+    def close_window_and_call_function(self, args, window, function):
+        window.destroy()
+
+    def room_list_window(self):
+        table = [{"name": "room1"}, {"name": "room2"}, {"name": "room3"},
+                 {"name": "room4"}]
+        room_list_window = tk.Toplevel(root)
+        room_list_frame = tk.Frame(room_list_window)
+        room_list_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+        # room_list_window.geometry("500x500")
+        for room in table:
+            new_btn = tk.Button(room_list_frame)
+            new_btn["text"] = str(room["name"])
+            # new_btn["command"] = self.client.connect_to_room.bind(room)
+            new_btn.pack(side=tk.TOP, fill=tk.X)
 
     def close_app(self):
         root.destroy()
 
-    def connect_to_chat(self):
+    def connect_to_chat_window(self):
+        chat_connection_window = tk.Toplevel(root)
+        chat_connection_window.wm_title("connect to chat directly")
+        chat_connection_frame = tk.Frame(chat_connection_window)
+        chat_connection_frame.grid(row=0, column=0)
+        ip_label = tk.Label(chat_connection_frame, text="IP:")
+        ip_label.grid(row=0, column=0)
+        ip_entry = tk.Entry(chat_connection_frame)
+        ip_entry.insert(0, "127.0.0.1")
+        ip_entry.grid(row=0, column=1)
+        self.ip_entry = ip_entry
+        port_label = tk.Label(chat_connection_frame, text="PORT:")
+        port_label.grid(row=0, column=2)
+        port_entry = tk.Entry(chat_connection_frame)
+        port_entry.insert(0, 40000)
+        port_entry.grid(row=0, column=3)
+        done_button = tk.Button(chat_connection_frame)
+        done_button["text"] = "connect"
+        args = []
+        args.append(ip_entry.get())
+        args.append(port_entry.get())
+        done_button["command"] = partial(self.close_window_and_call_function,
+                                         args, chat_connection_window,
+                                         "self.client.connect_to_chat")
+        done_button.grid(row=1, column=2)
+        self.port_entry = port_entry
+
         print("connecting to chat")
 
     def change_username(self):
@@ -113,6 +159,10 @@ class Client:
                 break
             except:
                 port += 1
+
+    def connect_to_chat(self, ip, port):
+        print(ip)
+        print(port)
 
     def listen_connection(self):
         while True:
