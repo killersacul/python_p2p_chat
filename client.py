@@ -7,14 +7,19 @@ import tkinter as tk
 from tkinter import messagebox, scrolledtext, simpledialog
 from functools import partial
 
+
 class P2pChat(tk.Frame):
+
+    width = 1280
+    height = 640
 
     def __init__(self, master=None):
 
         master.wm_title("test name")
         tk.Frame.__init__(self, master)
+        # self.grid()
         self.pack(fill=tk.BOTH, expand=1)
-        master.geometry("1280x640")
+        master.geometry(str(self.width) + "x" + str(self.height))
         self.create_mainmenu()
         self.client = Client()
 
@@ -22,15 +27,63 @@ class P2pChat(tk.Frame):
         menubar = tk.Menu(self)
         menu = tk.Menu(menubar, tearoff=0)
         menu.add_command(label="Start hosting", command=self.start_hosting)
-        menu.add_command(label="Connect to chat", command=self.connect_to_chat_window)
+        menu.add_command(label="Connect to chat",
+                         command=self.connect_to_chat_window)
         menu.add_command(label="Change Username", command=self.change_username)
-        menu.add_command(label="Get list of chats", command=self.room_list_window)
+        menu.add_command(label="Get list of chats",
+                         command=self.room_list_window)
         menu.add_separator()
         menu.add_command(label="Exit", command=self.close_app)
         menubar.add_cascade(label="Menu", menu=menu)
         self.master.config(menu=menubar)
+
+        # # create all the main frames
+        # toolbar_frame = tk.Frame(self, relief="sunken", width=self.width,
+        #                          height=(self.height / 10), padx=5,
+        #                          bg="red")
+        # middle_frame = tk.Frame(self, width=self.width,
+        #                         height=(8 * (self.height / 10)), padx=5,
+        #                         bg="green")
+        # footer_frame = tk.Frame(self, width=self.width,
+        #                         height=(self.height / 10), padx=5,
+        #                         bg="yellow")
+
+        # # sets the weight of the main window
+        # self.master.grid_rowconfigure(1, weight=1)
+        # self.master.grid_columnconfigure(0, weight=1)
+
+        # # grids the frames
+        # toolbar_frame.grid(row=0, sticky="ew")
+        # middle_frame.grid(row=1, sticky="nesw")
+        # footer_frame.grid(row=2, sticky="ew")
+
+        # toolbar_button_connect = tk.Button(toolbar_frame, text="Cth",
+        #                                    bg="white", bd=0, padx=10)
+        # toolbar_button_username = tk.Button(toolbar_frame, text="Cun",
+        #                                     bg="white", bd=0, padx=10)
+        # toolbar_label_username = tk.Label(toolbar_frame, text="cun",
+        #                                   bg="blue")
+        # toolbar_button_connect.grid(row=0, column=0, columnspan=3, sticky="e")
+        # toolbar_button_username.grid(row=0, column=4, columnspan=3, sticky="e")
+        # toolbar_label_username.grid(row=0, column=7)
+
+        # toolbar_frame.grid(row=0, column=0, columnspan=10)
+        # connect_to_host_button = tk.Button(toolbar_frame, relief="groove")
+        # connect_to_host_button["text"] = "cth"
+        # connect_to_host_button.grid(row=0, column=0, sticky="nesw")
+        # get_room_list_button = tk.Button(toolbar_frame, relief="groove")
+        # get_room_list_button["text"] = "grl"
+        # get_room_list_button.grid(row=0, column=1, sticky="nesw")
+        # change_username_button = tk.Button(toolbar_frame, relief="groove")
+        # change_username_button["text"] = "cun"
+        # change_username_button.grid(row=0, column=2, sticky="nesw")
+        # username_label_frame = tk.LabelFrame(toolbar_frame, text="UserName", bg="blue")
+        # username_label_frame.grid(row=0, column=5)
+        # username_label = tk.Label(text="UserName")
+        # username_label.grid(row=0, column=5)
+
         msg_frame = tk.Frame(self)
-        msg_frame.pack(side=tk.LEFT, fill=tk.Y, expand=1)
+        msg_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=1)
 
         msg_window = scrolledtext.ScrolledText(msg_frame, height=10, width=80)
         msg_window.pack(side=tk.TOP, fill=tk.BOTH, expand=1)
@@ -50,14 +103,17 @@ class P2pChat(tk.Frame):
         send_btn["command"] = self.send_message_to_chat
         send_btn.pack(side=tk.RIGHT)
 
-        # user_list = tk.Framef
+        # user_list = tk.LabelFrame(self, text="user in chat", bg="red")
+        # user_list.grid(row=0, column=1, sticky="W")
         master = self.master
         master.bind('<Return>', self.send_message_to_chat)
         master.bind('<KP_Enter>', self.send_message_to_chat)
+
         master.update()
 
     def close_window_and_call_function(self, args, window, function):
         window.destroy()
+
 
     def room_list_window(self):
         table = [{"name": "room1"}, {"name": "room2"}, {"name": "room3"},
@@ -115,7 +171,7 @@ class P2pChat(tk.Frame):
         self.client.s.send("/gethostlist".encode())
         print("getting chat list")
 
-    def send_message_to_chat(self):
+    def send_message_to_chat(self, event):
         print("sending message to chat")
         msg = self.msg_entry.get()
         print(msg)
@@ -135,19 +191,19 @@ class Client:
     server = ('127.0.0.1', 10000)
 
     def __init__(self):
-        port = 10001
-        print("hello")
+        # port = 10001
+        # print("heightllo")
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        ip = socket.gethostbyname(socket.gethostname())
-        while True:
-            try:
-                self.s.bind((ip, port))
-                break
-            except:
-                port += 1
-        self.s.connect(self.server)
-        ths = threading.Thread(target=self.recv_handler_server)
-        ths.start()
+        # ip = socket.gethostbyname(socket.gethostname())
+        # while True:
+            # try:
+                # self.s.bind((ip, port))
+                # break
+            # except:
+                # port += 1
+        # self.s.connect(self.server)
+        # ths = threading.Thread(target=self.recv_handler_server)
+        # ths.start()
         # lc = threading.Thread(target=self.listen_connection)
         # lc.start()
 
