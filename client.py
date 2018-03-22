@@ -8,7 +8,6 @@ from tkinter import messagebox, scrolledtext, simpledialog
 from functools import partial
 
 class P2pChat(tk.Frame):
-    client = []
     def __init__(self, master=None):
 
         master.wm_title("test name")
@@ -16,7 +15,7 @@ class P2pChat(tk.Frame):
         self.pack(fill=tk.BOTH, expand=1)
         master.geometry("1280x640")
         self.create_mainmenu()
-        self.client = Client()
+        self.client = Client(self)
 
     def create_mainmenu(self):
         menubar = tk.Menu(self)
@@ -52,16 +51,18 @@ class P2pChat(tk.Frame):
 
         # user_list = tk.Framef
         master = self.master
-        master.bind('<Return>', self.send_message_to_chat)
-        master.bind('<KP_Enter>', self.send_message_to_chat)
+        # master.bind('<Return>', self.send_message_to_chat)
+        # master.bind('<KP_Enter>', self.send_message_to_chat)
         master.update()
 
     def close_window_and_call_function(self, args, window, function):
         window.destroy()
 
     def room_list_window(self):
-        table = [{"name": "room1"}, {"name": "room2"}, {"name": "room3"},
-                 {"name": "room4"}]
+
+        self.client.send_data(self.client.s, "gethostlist", ['null'], )
+    def room_list(self, table):
+        # table = [{"name": "room1"}, {"name": "room2"}, {"name": "room3"},{"name": "room4"}]
         room_list_window = tk.Toplevel(root)
         room_list_frame = tk.Frame(room_list_window)
         room_list_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=1)
@@ -71,6 +72,7 @@ class P2pChat(tk.Frame):
             new_btn["text"] = str(room["name"])
             # new_btn["command"] = self.client.connect_to_room.bind(room)
             new_btn.pack(side=tk.TOP, fill=tk.X)
+
 
     def close_app(self):
         root.destroy()
@@ -118,11 +120,14 @@ class P2pChat(tk.Frame):
     def send_message_to_chat(self):
         print("sending message to chat")
         msg = self.msg_entry.get()
-        print(msg)
         self.msg_entry.delete(0, tk.END)
-        self.client.s.send(msg.encode())
+        self.client.send_message_user('msg', msg)
 
-    def update_message_list(self):
+    def update_message_list(self, msg):
+        self.msg_window.config(state=tk.NORMAL)
+        self.msg_window.insert(tk.END, "%s\n" % msg)
+        self.msg_window.yview(tk.END)
+        self.msg_window.config(state=tk.DISABLED)
         print("updating the message_list")
 
     def start_hosting(self):
@@ -131,95 +136,92 @@ class P2pChat(tk.Frame):
 
 
 class Client:
-
-    server = ('127.0.0.1', 10020)
-
-    def __init__(self):
-        self.port = 10001
+    users = []
+    server = ('127.0.0.1', 10042)
+    p2pclient = []
+    def __init__(self, p2p_chat):
+        self.p2p_chat = p2p_chat
         print("init")
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.su = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         ip = socket.gethostbyname(socket.gethostname())
 
-        self.bind_port(self.s, ip, self.port)
-        self.portU = self.port
-        self.bind_port(self.su, ip, self.portU)
-
+        self.s.bind(('', 0))
+        self.su.bind(('', 0))
         self.s.connect(self.server)
-        self.send_data(self.s, "connexion", ["127.0.0.1", self.portU])
-        ths = threading.Thread(target=self.recv_handler_server)
-        threading.Thread(target=self.handle_user_connection)
-        ths.start()
+        self.send_data(self.s, "connexion", self.su.getsockname())
+        ths1 = threading.Thread(target=self.recv_handler_server)
+        ths2 = threading.Thread(target=self.handle_user_connection)
+        ths1.start()
+        ths2.start()
         # lc = threading.Thread(target=self.listen_connection)
         # lc.start()
-    def bind_port(self, sock, ip, port):
-        while True:
-            try:
-                sock.bind(ip, port)
-                break
-            except:
-                port += 1
 
-    def connect_to_chat(self, ip, port):
-        print(ip)
-        print(port)
 
     def listen_connection(self):
+        print("listen")
         while True:
             # self.s.listen(5)
             sock, addr = self.s.accept()
-            if addr[0] == "127.0.0.1" & addr[1] == 10000:
+            if addr[0] == "127.0.0.1" & addr[1] == server[1]:
                 ths = threading.Thread(target=self.recv_handler_server,
                                        kwargs={'sock': sock})
                 ths.start()
             else:
+                print("user reac_handler")
                 th = threading.Thread(target=self.recv_handler,
                                       kwargs={'sock': sock})
                 th.start()
         self.s.close()
 
     def recv_handler_server(self):
+
         while True:
-            msg = self.s.recv(1024)
-            msg = msg.decode("utf-8")
+            msg = self.s.recv(1024).decode("utf-8")
             temp = json.loads(msg)
-            print(str(temp))
             if msg:
                 print("message from server test")
                 for user in temp:
-                    if user[1] != self.portU:
-                        self.client.append(socket.socket(socket.AF_INET, socket.SOCK_STREAM))
-                        self.client[-1].bind('', 0)
+                    if user[1] != self.su.getsockname()[1]:
+                        self.p2pclient.append(socket.socket(socket.AF_INET, socket.SOCK_STREAM))
+                        self.p2pclient[-1].bind(('', 0))
                         print(str(user[0]), user[1])
-                        self.client[-1].connect((user[0], user[1]))
+                        self.p2pclient[-1].connect((user[0], user[1]))
+                        th = threading.Thread(target=self.recv_handler, kwargs={'sock': self.p2pclient[-1]})
 
     def recv_handler(self, sock):
+        print("recv_handler")
+        print("message is not from user")
         while True:
-            msg = sock.recv(1024)
-            msg.decode()
-            if not msg:
-                print("message is not from server")
-                print(msg)
+            msg = sock.recv(1024).decode()
+            if not msg: break
+            self.p2p_chat.update_message_list(str(msg))
+
 
     def handle_user_connection(self):
+        print("handle_user_connection")
         while True:
-            self.s.listen(5)
-            sock, addr = self.s.accept()
+            self.su.listen(5)
+            sock, addr = self.su.accept()
             acu = threading.Thread(target=self.add_connected_user,
                                    kwargs=({"sock": sock, "addr": addr}))
             acu.start()
-            self.listusers.append([addr[0], addr[1]])
-            print(sock)
-            # print('Connected with ' + addr[0] + ':' + str(addr[1]))
+            print('Connected with ' + addr[0] + ':' + str(addr[1]))
         self.s.close()
+
     def send_data(self, sock, type_message, data):
         sock.send(str("{\"message\": \""+str(type_message)+"\", \"data\": "+json.dumps(data)+"}").encode("utf-8"))
+
     def add_connected_user(self, sock, addr):
         print(sock, addr)
-        # new_user = User(sock, addr[0], addr[1])
-        # self.users.append(new_user)
-        # th = threading.Thread(target=self.recv_handler, kwargs={'sock': sock})
-        # th.start()
+        new_user = [sock, addr[0], addr[1]]
+        self.users.append(new_user)
+        th = threading.Thread(target=self.recv_handler, kwargs={'sock': sock})
+        th.start()
+    def send_message_user(self, type_message, data):
+        for user in self.p2pclient:
+            user.send(data.encode())
+
 class Chat:
 
     def __init__():

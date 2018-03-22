@@ -11,7 +11,7 @@ class server:
     def __init__(self):
         print("starting the server")
         self._lock = threading.Lock()
-        port = 10020
+        port = 10042
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.bind(('', port))
         huc = threading.Thread(target=self.handle_user_connection)
@@ -38,17 +38,26 @@ class server:
         th.start()
 
     def recv_handler(self, sock):
-        while True:
-            msg = sock.recv(1024)
-            print(msg)
-            data = json.loads(msg.decode())
-            print(data)
-            if data['message'] == "connexion":
-                print(data["data"])
-                # self.listusers.append([addr[0], addr[1]])
-                self.listusers.append(data['data'])
-            if data['message'] == "gethostlist":
-                self.return_list_of_host(sock)
+        try:
+            while True:
+                msg = sock.recv(1024)
+                data = json.loads(msg.decode())
+                if data['message'] == "connexion":
+                    print(data["data"])
+                    self.listusers.append(sock.getsockname())
+                if data['message'] == "gethostlist":
+                    self.return_list_of_host(sock)
+        except Exception as e:
+
+            for i, user in enumerate(self.listusers):
+                print("deconnection etape 1")
+                print(user)
+                print(sock.getsockname())
+                if str(sock.getsockname()[0]) == str(user[0]) and  int(sock.getsockname()[1]) == int(user[1]):
+
+                    del self.listusers[i]
+                    print("deconnexion de :" + str(user))
+
             # if message_type == 2:
             #     self.starting_hosting(sock)
             # if message_type == 3:
