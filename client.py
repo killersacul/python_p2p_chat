@@ -20,7 +20,7 @@ class P2pChat(tk.Frame):
         self.pack(fill=tk.BOTH, expand=1)
         master.geometry(str(self.width) + "x" + str(self.height))
         self.create_mainmenu()
-        # self.user_list_window()
+        self.userlist_window([])
         self.client = Client(self)
 
     def create_mainmenu(self):
@@ -68,19 +68,26 @@ class P2pChat(tk.Frame):
 
     def close_window_and_call_function(self, args, window, function):
         window.destroy()
+        function()
 
-    def user_list_window(self, users):
+    def userlist_window(self, users):
+        users = [{"name": "les cons"}, {"name": "god"}, {"name": "alexis"},
+                 {"name": "jerem"}, {"name": "lothare"}]
         user_list_window = tk.Toplevel(root)
         for user in users:
-            user_label = tk.Label(user_list_window, text=user.name)
+            user_label = tk.Label(user_list_window, text=str(user["name"]))
             user_label.pack(side=tk.TOP, fill=tk.X)
+            separator_label = tk.Label(user_list_window,
+                                       text=str("=" * len(user["name"])))
+            separator_label.pack(side=tk.TOP, fill=tk.X)
+        self.user_list_window = user_list_window
         print("user_list_window")
 
     def room_list_window(self):
         self.client.send_data(self.client.s, "gethostlist", ['null'], )
 
-    def room_list(self, table):
-        # table = [{"name": "room1"}, {"name": "room2"}, {"name": "room3"},{"name": "room4"}]
+    def room_list(self, table=[]):
+        # table = [{"name": "room1"}, {"name": "room2"}, {"name": "room3"}, {"name": "room4"}]
         room_list_window = tk.Toplevel(root)
         room_list_frame = tk.Frame(room_list_window)
         room_list_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=1)
