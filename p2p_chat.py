@@ -33,8 +33,9 @@ class P2pChat(tk.Frame):
                              fill=tk.Y, expand=0)
         self.room_list_frame = room_list_frame
         self.create_room_list()
-        create_room_frame = tk.LabelFrame(room_list_frame, text="Create new room",
-                                          width="130", bd=3, bg="blue")
+        create_room_frame = tk.LabelFrame(room_list_frame,
+                                          text="Create new room",
+                                          width="130", bd=3)
         create_room_frame.pack(side=tk.BOTTOM, fill=tk.X, expand=0)
         self.create_room_frame = create_room_frame
         room_name_entry = tk.Entry(create_room_frame)
