@@ -1,15 +1,11 @@
 import socket
 import threading
 import json
-# import select
-# import sys
-
 
 class Client:
     users = []
-    server = ('127.0.0.1', 10042)
+    server = ('127.0.0.1', 10049)
     p2pclient = []
-
     def __init__(self, p2p_chat):
         self.p2p_chat = p2p_chat
         print("init")
@@ -18,15 +14,15 @@ class Client:
         ip = socket.gethostbyname(socket.gethostname())
 
         self.s.bind(('', 0))
-        self.su.bind(('', 0))
         self.s.connect(self.server)
+        self.su.bind(('', 0))
+        print(self.su.getsockname())
         self.send_data(self.s, "connexion", self.su.getsockname())
         ths1 = threading.Thread(target=self.recv_handler_server)
-        ths2 = threading.Thread(target=self.handle_user_connection)
         ths1.start()
+
+        ths2 = threading.Thread(target=self.server_user)
         ths2.start()
-        # lc = threading.Thread(target=self.listen_connection)
-        # lc.start()
 
 
     def listen_connection(self):
@@ -46,19 +42,16 @@ class Client:
         self.s.close()
 
     def recv_handler_server(self):
-
+        tmp = ""
         while True:
+            print("message from server test")
             msg = self.s.recv(1024).decode("utf-8")
-            temp = json.loads(msg)
-            if msg:
-                print("message from server test")
-                for user in temp:
-                    if user[1] != self.su.getsockname()[1]:
-                        self.p2pclient.append(socket.socket(socket.AF_INET, socket.SOCK_STREAM))
-                        self.p2pclient[-1].bind(('', 0))
-                        print(str(user[0]), user[1])
-                        self.p2pclient[-1].connect((user[0], user[1]))
-                        th = threading.Thread(target=self.recv_handler, kwargs={'sock': self.p2pclient[-1]})
+            tmp = tmp + msg
+            if msg is not True: break
+        data = json.loads(tmp)
+        if data["message"] == "list_of_users":
+            self.connect_to_room_generale(data["data"])
+
 
     def recv_handler(self, sock):
         print("recv_handler")
@@ -69,32 +62,46 @@ class Client:
             self.p2p_chat.update_message_list(str(msg))
 
 
-    def handle_user_connection(self):
-        print("handle_user_connection")
+    def server_user(self):
         while True:
             self.su.listen(5)
             sock, addr = self.su.accept()
+            self.p2pclient.append(sock)
+            print("connexion " + str(sock))
+
             acu = threading.Thread(target=self.add_connected_user,
                                    kwargs=({"sock": sock, "addr": addr}))
             acu.start()
-            print('Connected with ' + addr[0] + ':' + str(addr[1]))
-        self.s.close()
+            print(self.p2pclient)
+            # print('Connected with ' + addr[0] + ':' + str(addr[1]))
+        # self.su.close()
 
-    def send_data(self, sock, type_message, data):
-        sock.send(str("{\"message\": \"" + str(type_message) + "\", \"data\": " + json.dumps(data) + "}").encode("utf-8"))
-
-    def add_connected_user(self, sock, addr):
-        print(sock, addr)
-        new_user = [sock, addr[0], addr[1]]
-        self.users.append(new_user)
-        th = threading.Thread(target=self.recv_handler, kwargs={'sock': sock})
-        th.start()
+    def send_data(self, sock, type_message, array):
+        data = {}
+        data["message"] = type_message
+        data["data"] = array
+        print("send_data: " + str(data) + " to " + str(type_message))
+        sock.send(json.dumps(data).encode("utf-8"))
 
     def send_message_user(self, type_message, data):
         for user in self.p2pclient:
             user.send(data.encode())
 
-class Chat:
+    def add_connected_user(self, sock, addr):
+        print(sock, addr, )
+        new_user = [sock, addr[0], addr[1]]
+        self.users.append(new_user)
+        th = threading.Thread(target=self.recv_handler, kwargs={'sock': sock})
+        th.start()
 
-    def __init__():
-        print("new chat")
+    def connect_to_room_generale(self, room):
+        for user in room:
+            print(user)
+            if user[1] != self.su.getsockname()[1]:
+                self.p2pclient.append(socket.socket(socket.AF_INET, socket.SOCK_STREAM))
+                self.p2pclient[-1].bind(('', 0))
+                print("demande de connection : " +str(user[0]) +" " +str(user[1]))
+                self.p2pclient[-1].connect((user[0], user[1]))
+                print("user connection")
+                th = threading.Thread(target=self.recv_handler, kwargs={'sock': self.p2pclient[-1]})
+                th.start()

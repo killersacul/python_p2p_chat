@@ -1,57 +1,35 @@
+import threading
+import json
 from Client import Client
+# import select
+# import sys
 import tkinter as tk
-from tkinter import scrolledtext, simpledialog
+from tkinter import messagebox, scrolledtext, simpledialog
 from functools import partial
 
-
 class P2pChat(tk.Frame):
-
-    width = 1280
-    height = 640
-
     def __init__(self, master=None):
 
         master.wm_title("test name")
         tk.Frame.__init__(self, master)
         self.pack(fill=tk.BOTH, expand=1)
-        master.geometry(str(self.width) + "x" + str(self.height))
+        master.geometry("1280x640")
         self.create_mainmenu()
         self.client = Client(self)
 
     def create_mainmenu(self):
         menubar = tk.Menu(self)
         menu = tk.Menu(menubar, tearoff=0)
+        menu.add_command(label="Start hosting", command=self.start_hosting)
+        menu.add_command(label="Connect to chat", command=self.connect_to_chat_window)
         menu.add_command(label="Change Username", command=self.change_username)
+        menu.add_command(label="Get list of chats", command=self.room_list_window)
         menu.add_separator()
         menu.add_command(label="Exit", command=self.close_app)
         menubar.add_cascade(label="Menu", menu=menu)
         self.master.config(menu=menubar)
-
-        room_list_frame = tk.LabelFrame(self, text="Room list",
-                                        bd=5, width="150")
-        room_list_frame.pack(side=tk.RIGHT,
-                             fill=tk.Y, expand=0)
-        self.room_list_frame = room_list_frame
-        self.create_room_list()
-        create_room_frame = tk.LabelFrame(room_list_frame,
-                                          text="Create new room",
-                                          width="130", bd=3)
-        create_room_frame.pack(side=tk.BOTTOM, fill=tk.X, expand=0)
-        self.create_room_frame = create_room_frame
-        room_name_entry = tk.Entry(create_room_frame)
-        room_name_entry.pack(side=tk.LEFT)
-        room_name_button = tk.Button(create_room_frame)
-        room_name_button["text"] = "Create"
-        room_name_button.pack(side=tk.LEFT)
-
-        room_user_list_frame = tk.LabelFrame(self, text="User list",
-                                             bd=5, width="150")
-        room_user_list_frame.pack(side=tk.RIGHT, fill=tk.Y, expand=0)
-        self.room_user_list_frame = room_user_list_frame
-        self.create_room_user_list()
-
         msg_frame = tk.Frame(self)
-        msg_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=1)
+        msg_frame.pack(side=tk.LEFT, fill=tk.Y, expand=1)
 
         msg_window = scrolledtext.ScrolledText(msg_frame, height=10, width=80)
         msg_window.pack(side=tk.TOP, fill=tk.BOTH, expand=1)
@@ -71,36 +49,29 @@ class P2pChat(tk.Frame):
         send_btn["command"] = self.send_message_to_chat
         send_btn.pack(side=tk.RIGHT)
 
+        # user_list = tk.Framef
         master = self.master
-        master.bind('<Return>', self.send_message_to_chat)
-        master.bind('<KP_Enter>', self.send_message_to_chat)
-
+        # master.bind('<Return>', self.send_message_to_chat)
+        # master.bind('<KP_Enter>', self.send_message_to_chat)
         master.update()
 
-    def create_room_user_list(self, users=[]):
-        self.clean_frame_widgets(self.room_user_list_frame)
-        users = [{"name": "les cons"}, {"name": "god is just really dog spelled backwards"}, {"name": "alexis"},
-                 {"name": "jerem"}, {"name": "lothare"}]
-        for user in users:
-            user_label = tk.Label(self.room_user_list_frame,
-                                  text=str(user["name"]), anchor="w")
-            user_label.pack(side=tk.TOP, fill=tk.X, padx="10")
+    def close_window_and_call_function(self, args, window, function):
+        window.destroy()
 
-    # def create_room_user_list(self):
-        # self.client.send_data(self.client.s, "gethostlist", ['null'], )
-
-    def create_room_list(self, table=[]):
-        self.clean_frame_widgets(self.room_list_frame)
-        table = [{"name": "room1"}, {"name": "room2"}, {"name": "room3"}, {"name": "room4"}]
+    def room_list_window(self):
+        self.client.send_data(self.client.s, "list_of_users", ['null'], )
+    def room_list(self, table):
+        # table = [{"name": "room1"}, {"name": "room2"}, {"name": "room3"},{"name": "room4"}]
+        room_list_window = tk.Toplevel(root)
+        room_list_frame = tk.Frame(room_list_window)
+        room_list_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+        # room_list_window.geometry("500x500")
         for room in table:
-            new_btn = tk.Button(self.room_list_frame, relief="ridge")
+            new_btn = tk.Button(room_list_frame)
             new_btn["text"] = str(room["name"])
             # new_btn["command"] = self.client.connect_to_room.bind(room)
-            new_btn.pack(side=tk.TOP, fill=tk.X, ipadx="20", padx="10", pady="5")
+            new_btn.pack(side=tk.TOP, fill=tk.X)
 
-    def clean_frame_widgets(self, frame):
-        for widget in frame.winfo_children():
-            widget.destroy()
 
     def close_app(self):
         root.destroy()
@@ -162,7 +133,7 @@ class P2pChat(tk.Frame):
         self.client.s.send("/startHost".encode())
         print("starting to host")
 
+class Chat:
 
-root = tk.Tk()
-p2p_chat = P2pChat(master=root)
-p2p_chat.mainloop()
+    def __init__():
+        print("new chat")
