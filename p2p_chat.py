@@ -10,7 +10,9 @@ class P2pChat(tk.Frame):
     height = 640
 
     def __init__(self, master=None):
-
+        self.ip_var = tk.StringVar()
+        self.port_var = tk.IntVar()
+        self.username_var = tk.StringVar()
         master.wm_title("test name")
         tk.Frame.__init__(self, master)
         self.pack(fill=tk.BOTH, expand=1)
@@ -87,25 +89,25 @@ class P2pChat(tk.Frame):
         chat_connection_frame.grid(row=0, column=0)
         ip_label = tk.Label(chat_connection_frame, text="IP:")
         ip_label.grid(row=0, column=0)
-        ip_entry = tk.Entry(chat_connection_frame)
-        ip_entry.insert(0, "127.0.0.1")
+        ip_entry = tk.Entry(chat_connection_frame, textvariable=self.ip_var)
+        self.ip_var.set("127.0.0.1")
+        # ip_entry.insert(0, "127.0.0.1")
         ip_entry.grid(row=0, column=1)
         self.ip_entry = ip_entry
         port_label = tk.Label(chat_connection_frame, text="PORT:")
         port_label.grid(row=0, column=2)
-        port_entry = tk.Entry(chat_connection_frame)
-        port_entry.insert(0, 40000)
+        port_entry = tk.Entry(chat_connection_frame,
+                              textvariable=self.port_var)
+        self.port_var.set(400000)
+        # port_entry.insert(0, 40000)
         port_entry.grid(row=0, column=3)
         username_label = tk.Label(chat_connection_frame, text="USERNAME:")
         username_label.grid(row=0, column=4)
-        username_entry = tk.Entry(chat_connection_frame)
+        username_entry = tk.Entry(chat_connection_frame,
+                                  textvariable=self.username_var)
         username_entry.grid(row=0, column=5)
         done_button = tk.Button(chat_connection_frame)
         done_button["text"] = "connect"
-        args = []
-        self.ip_entry = ip_entry
-        self.port_entry = port_entry
-        self.username_entry = username_entry
         done_button["command"] = partial(self.close_window_and_call_function,
                                          chat_connection_window)
         done_button.grid(row=1, column=2)
@@ -113,8 +115,9 @@ class P2pChat(tk.Frame):
 
     def close_window_and_call_function(self, frame):
         frame.destroy()
-        self.client = Client(self, self.ip_entry.get(),
-                             self.port_entry.get(), self.username_entry.get())
+        print(self.port_var.get())
+        self.client = Client(self, self.ip_var.get(),
+                             self.port_var.get(), self.username_var.get())
 
     def create_room_user_list(self, users=[]):
         self.clean_frame_widgets(self.room_user_list_frame)
