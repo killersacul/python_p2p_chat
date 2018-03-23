@@ -6,8 +6,10 @@ class Client:
     users = []
     server = ()
     p2pclient = []
-    def __init__(self, p2p_chat, host="127.0.0.1", port=400000, username=None):
-        self.server = (host, int(port))
+    def __init__(self, p2p_chat, host="127.0.0.1", port=10049, username=None):
+        server = (host, port)
+        # self.server[0] = host
+        # self.server[1] = port
         self.p2p_chat = p2p_chat
         print("connection to :")
         print(self.server)
@@ -95,6 +97,12 @@ class Client:
         self.users.append(new_user)
         th = threading.Thread(target=self.recv_handler, kwargs={'sock': sock})
         th.start()
+
+    def connect_to_room(self, room):
+        print("connect to room" + str(room))
+
+    def create_new_room(self, room_name):
+        print("creating room" + str(room_name))
 
     def connect_to_room_generale(self, room):
         for user in room:
