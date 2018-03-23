@@ -1,4 +1,4 @@
-from client import Client
+from Client import Client
 import tkinter as tk
 from tkinter import scrolledtext, simpledialog
 from functools import partial
@@ -81,7 +81,7 @@ class P2pChat(tk.Frame):
         users = [{"name": "les cons"}, {"name": "god is just really dog spelled backwards"}, {"name": "alexis"},
                  {"name": "jerem"}, {"name": "lothare"}]
         for user in users:
-            user_label = tk.Label(self.room_user_list_frame, 
+            user_label = tk.Label(self.room_user_list_frame,
                                   text=str(user["name"]), anchor="w")
             user_label.pack(side=tk.TOP, fill=tk.X, padx="10")
 
