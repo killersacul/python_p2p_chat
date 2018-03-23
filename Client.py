@@ -4,13 +4,13 @@ import json
 
 class Client:
     users = []
-    server = ('127.0.0.1', 10049)
+    server = ()
     p2pclient = []
     def __init__(self, p2p_chat, host="127.0.0.1", port=10049, username=None):
-        self.server[0] = host
-        self.server[1] = port
+        self.server = (host, int(port))
         self.p2p_chat = p2p_chat
-        print("init")
+        print("connection to :")
+        print(self.server)
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.su = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         ip = socket.gethostbyname(socket.gethostname())
