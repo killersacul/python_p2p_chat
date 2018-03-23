@@ -4,11 +4,11 @@ class Server_room:
     room = []
 
     def __init__(self, name, nameadmin):
-        print("===== create room ====)
+        print("===== create room ====")
         self._lock = threading.Lock()
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.bind(('', 0))
-        self.room = [self.s.getsockname(), nameadmin, name]
+        self.info = [self.s.getsockname(), nameadmin, name]
         huc = threading.Thread(target=self.handle_user_connection)
         huc.start()
 
@@ -47,19 +47,6 @@ class Server_room:
                 if str(sock.getsockname()[0]) == str(user[0]) and  int(sock.getsockname()[1]) == int(user[2]):
                     del self.listusers[i]
                     print("deconnexion de :" + str(user))
-
-    def change_user_name(self, sock, username):
-        for user in self.users:
-            if user.sock == sock:
-                user.username = username
-        print("changing username")
-
-    def starting_hosting(self, temp_sock):
-        print("starting hosting")
-        for user in self.users:
-            if user.sock == temp_sock:
-                user.hosting = True
-                print("found the user")
 
     def return_list_of_users(self, sock):
         print("send list of host :")

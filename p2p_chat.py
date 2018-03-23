@@ -89,7 +89,7 @@ class P2pChat(tk.Frame):
         port_label.grid(row=0, column=2)
         port_entry = tk.Entry(chat_connection_frame,
                               textvariable=self.port_var)
-        self.port_var.set(400000)
+        self.port_var.set(10049)
         port_entry.grid(row=0, column=3)
         username_label = tk.Label(chat_connection_frame, text="USERNAME:")
         username_label.grid(row=0, column=4)
@@ -108,7 +108,7 @@ class P2pChat(tk.Frame):
         print(self.port_var.get())
         self.client = Client(self, self.ip_var.get(),
                              self.port_var.get(), self.username_var.get())
-        self.create_room_list()
+        # self.create_room_list()
 
     def create_room_user_list(self, users=[]):
         self.clean_frame_widgets(self.room_user_list_frame)

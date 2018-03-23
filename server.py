@@ -7,7 +7,7 @@ import json
 class server:
 
     users = []
-
+    listrooms = []
     def __init__(self):
         print("starting the server")
         self._lock = threading.Lock()
@@ -46,6 +46,12 @@ class server:
                 elif data['message'] == "list_of_users":
                     print("list_of_users")
                     self.return_list_of_users(sock)
+                elsif data['message'] == "new_room":
+                    print("new_room")
+                    self.create_new_room(sock, data)
+                elif data['message'] == "list_of_room":
+                    print("list_of_room")
+                    self.return_list_of_rooms(sock)
         except Exception as e:
             print(e)
             for i, user in enumerate(self.listusers):
@@ -76,6 +82,18 @@ class server:
         data["data"] = self.listusers
         print(data)
         sock.send(json.dumps(data).encode("utf-8"))
+
+    def return_list_of_rooms(self, sock):
+        print("send list of room :")
+        data = {}
+        data['message'] = "list_of_rooms"
+        data["data"] = self.listrooms
+        sock.send(json.dumps(data).encode("utf-8"))
+
+    def create_new_room(self, sock, data):
+        dat["data"][0] = sock.getsockname()[0]
+        print(data)
+        self.listrooms = data['data']
 
     def connect_to_host(self, sock, ip, port):
         for user in self.users:

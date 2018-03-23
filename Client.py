@@ -1,15 +1,15 @@
 import socket
 import threading
 import json
+from server_room import Server_room
 
 class Client:
     users = []
     server = ()
     p2pclient = []
     def __init__(self, p2p_chat, host="127.0.0.1", port=10049, username=None):
-        server = (host, port)
-        # self.server[0] = host
-        # self.server[1] = port
+        self.username = username
+        self.server = (host, port)
         self.p2p_chat = p2p_chat
         print("connection to :")
         print(self.server)
@@ -55,6 +55,8 @@ class Client:
         data = json.loads(tmp)
         if data["message"] == "list_of_users":
             self.connect_to_room_generale(data["data"])
+        if data["message"] == "list_of_room":
+            self.p2p_chat.create_room_list(data["data"])
 
 
     def recv_handler(self, sock):
@@ -80,19 +82,13 @@ class Client:
             # print('Connected with ' + addr[0] + ':' + str(addr[1]))
         # self.su.close()
 
-    def send_data(self, sock, type_message, array):
-        data = {}
-        data["message"] = type_message
-        data["data"] = array
-        print("send_data: " + str(data) + " to " + str(type_message))
-        sock.send(json.dumps(data).encode("utf-8"))
 
     def send_message_user(self, type_message, data):
         for user in self.p2pclient:
             user.send(data.encode())
 
     def add_connected_user(self, sock, addr):
-        print(sock, addr, )
+        print(sock, addr)
         new_user = [sock, addr[0], addr[1]]
         self.users.append(new_user)
         th = threading.Thread(target=self.recv_handler, kwargs={'sock': sock})
@@ -102,7 +98,10 @@ class Client:
         print("connect to room" + str(room))
 
     def create_new_room(self, room_name):
-        print("creating room" + str(room_name))
+        self.my_rooms.append(server_room(room_name, self.username))
+        self.my_rooms[-1].info
+        self.send_data(sock, "new_room", self.my_rooms[-1].room)
+        print("creating room :" + str(self.my_rooms[-1].info))
 
     def connect_to_room_generale(self, room):
         for user in room:
@@ -116,10 +115,19 @@ class Client:
                 th = threading.Thread(target=self.recv_handler, kwargs={'sock': self.p2pclient[-1]})
                 th.start()
 
+    def get_room_list(self, colback):
 
+        colback()
 
     def destroy(self):
         print("destroy")
         self.s.close()
         self.su.close()
         pass
+
+    def send_data(self, sock, type_message, array):
+        data = {}
+        data["message"] = type_message
+        data["data"] = array
+        print("send_data: " + str(data) + " to " + str(type_message))
+        sock.send(json.dumps(data).encode("utf-8"))
