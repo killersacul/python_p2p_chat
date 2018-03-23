@@ -16,7 +16,7 @@ class P2pChat(tk.Frame):
         self.pack(fill=tk.BOTH, expand=1)
         master.geometry(str(self.width) + "x" + str(self.height))
         self.create_mainmenu()
-        self.client = Client(self)
+        # self.client = Client(self)
 
     def create_mainmenu(self):
         menubar = tk.Menu(self)

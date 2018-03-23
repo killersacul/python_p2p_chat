@@ -12,6 +12,7 @@ class server:
         print("starting the server")
         self._lock = threading.Lock()
         port = 10049
+        print("port :" + str(port))
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.bind(('', port))
         huc = threading.Thread(target=self.handle_user_connection)

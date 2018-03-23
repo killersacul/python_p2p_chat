@@ -6,7 +6,7 @@ class Client:
     users = []
     server = ('127.0.0.1', 10049)
     p2pclient = []
-    def __init__(self, p2p_chat, host=127.0.0.1, port=10049, username=None):
+    def __init__(self, p2p_chat, host="127.0.0.1", port=10049, username=None):
         self.server[0] = host
         self.server[1] = port
         self.p2p_chat = p2p_chat
