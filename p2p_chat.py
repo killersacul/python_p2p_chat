@@ -107,7 +107,7 @@ class P2pChat(tk.Frame):
         args.append(port_entry.get())
         args.append(username_entry.get())
         done_button["command"] = partial(self.close_window_and_call_function,
-                                             args, chat_connection_window)
+                                         args, chat_connection_window)
         done_button.grid(row=1, column=2)
         self.port_entry = port_entry
 
@@ -119,7 +119,7 @@ class P2pChat(tk.Frame):
     def create_room_user_list(self, users=[]):
         self.clean_frame_widgets(self.room_user_list_frame)
         users = [{"name": "les cons"}, {"name": "god is just really dog spelled backwards"}, {"name": "alexis"},
-                 {"name": "jerem"}, {"name": "lothare"}]
+                 {"name": "jerem"}, {"name": "lothaire"}]
         for user in users:
             user_label = tk.Label(self.room_user_list_frame,
                                   text=str(user["name"]), anchor="w")
