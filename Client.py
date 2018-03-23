@@ -107,6 +107,9 @@ class Client:
                 print("user connection")
                 th = threading.Thread(target=self.recv_handler, kwargs={'sock': self.p2pclient[-1]})
                 th.start()
+
+
+
     def destroy(self):
         print("destroy")
         self.s.close()
