@@ -41,7 +41,7 @@ class server:
                 data = json.loads(msg.decode())
                 if data['message'] == "connexion":
                     print("connexion data :" + str(data["data"]))
-                    self.listusers.append([sock.getsockname()[0], data["data"][1], sock.getsockname()[1]])
+                    self.listusers.append([sock.getsockname()[0], data["data"][1], sock.getsockname()[1], data["data"][2]])
                 elif data['message'] == "list_of_users":
                     print("list_of_users")
                     self.return_list_of_users(sock)

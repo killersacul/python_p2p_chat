@@ -102,6 +102,8 @@ class P2pChat(tk.Frame):
             widget.destroy()
 
     def close_app(self):
+        print("close")
+        self.client.destroy()
         root.destroy()
 
     def connect_to_chat_window(self):

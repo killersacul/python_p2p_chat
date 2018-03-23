@@ -6,7 +6,9 @@ class Client:
     users = []
     server = ('127.0.0.1', 10049)
     p2pclient = []
-    def __init__(self, p2p_chat):
+    def __init__(self, p2p_chat, host=127.0.0.1, port=10049, username=None):
+        self.server[0] = host
+        self.server[1] = port
         self.p2p_chat = p2p_chat
         print("init")
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -17,9 +19,9 @@ class Client:
         self.s.connect(self.server)
         self.su.bind(('', 0))
         print(self.su.getsockname())
-        self.send_data(self.s, "connexion", self.su.getsockname())
-        ths1 = threading.Thread(target=self.recv_handler_server)
-        ths1.start()
+        self.send_data(self.s, "connexion", [self.su.getsockname(), username])
+        self.ths1 = threading.Thread(target=self.recv_handler_server)
+        self.ths1.start()
 
         ths2 = threading.Thread(target=self.server_user)
         ths2.start()
@@ -105,3 +107,8 @@ class Client:
                 print("user connection")
                 th = threading.Thread(target=self.recv_handler, kwargs={'sock': self.p2pclient[-1]})
                 th.start()
+    def destroy(self):
+        print("destroy")
+        self.s.close()
+        self.su.close()
+        pass
