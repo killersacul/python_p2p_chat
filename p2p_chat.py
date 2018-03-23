@@ -13,6 +13,7 @@ class P2pChat(tk.Frame):
         self.ip_var = tk.StringVar()
         self.port_var = tk.IntVar()
         self.username_var = tk.StringVar()
+        self.new_room_var = tk.StringVar()
         master.wm_title("test name")
         tk.Frame.__init__(self, master)
         self.pack(fill=tk.BOTH, expand=1)
@@ -42,10 +43,13 @@ class P2pChat(tk.Frame):
                                           width="130", bd=3)
         create_room_frame.pack(side=tk.BOTTOM, fill=tk.X, expand=0)
         self.create_room_frame = create_room_frame
-        room_name_entry = tk.Entry(create_room_frame)
+        room_name_entry = tk.Entry(create_room_frame,
+                                   textvariable=self.room_name_var)
         room_name_entry.pack(side=tk.LEFT)
         room_name_button = tk.Button(create_room_frame)
         room_name_button["text"] = "Create"
+        room_name_button["command"] = partial(self.client.create_new_room,
+                                              self.room_name_var.get())
         room_name_button.pack(side=tk.LEFT)
 
         room_user_list_frame = tk.LabelFrame(self, text="User list",
@@ -91,7 +95,6 @@ class P2pChat(tk.Frame):
         ip_label.grid(row=0, column=0)
         ip_entry = tk.Entry(chat_connection_frame, textvariable=self.ip_var)
         self.ip_var.set("127.0.0.1")
-        # ip_entry.insert(0, "127.0.0.1")
         ip_entry.grid(row=0, column=1)
         self.ip_entry = ip_entry
         port_label = tk.Label(chat_connection_frame, text="PORT:")
@@ -99,7 +102,6 @@ class P2pChat(tk.Frame):
         port_entry = tk.Entry(chat_connection_frame,
                               textvariable=self.port_var)
         self.port_var.set(400000)
-        # port_entry.insert(0, 40000)
         port_entry.grid(row=0, column=3)
         username_label = tk.Label(chat_connection_frame, text="USERNAME:")
         username_label.grid(row=0, column=4)
@@ -133,12 +135,14 @@ class P2pChat(tk.Frame):
 
     def create_room_list(self, table=[]):
         self.clean_frame_widgets(self.room_list_frame)
-        table = [{"name": "room1"}, {"name": "room2"}, {"name": "room3"}, {"name": "room4"}]
+        table = [{"name": "room1 des gods trolololololololl"}, {"name": "room2"}, {"name": "room3"}, {"name": "room4"}]
         for room in table:
             new_btn = tk.Button(self.room_list_frame, relief="ridge")
             new_btn["text"] = str(room["name"])
-            # new_btn["command"] = self.client.connect_to_room.bind(room)
-            new_btn.pack(side=tk.TOP, fill=tk.X, ipadx="20", padx="10", pady="5")
+            new_btn["command"] = partial(self.client.connect_to_room,
+                                         str(room["name"]))
+            new_btn.pack(side=tk.TOP, fill=tk.X, ipadx="20",
+                         padx="10", pady="5")
 
     def clean_frame_widgets(self, frame):
         for widget in frame.winfo_children():
