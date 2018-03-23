@@ -16,7 +16,7 @@ class P2pChat(tk.Frame):
         self.pack(fill=tk.BOTH, expand=1)
         master.geometry(str(self.width) + "x" + str(self.height))
         self.create_mainmenu()
-        self.client = Client(self)
+        # self.client = Client(self)
 
     def create_mainmenu(self):
         menubar = tk.Menu(self)
@@ -141,7 +141,9 @@ class P2pChat(tk.Frame):
         for widget in frame.winfo_children():
             widget.destroy()
 
-    def close_app(self, Event=None):
+    def close_app(self):
+        print("close")
+        self.client.destroy()
         root.destroy()
 
     def change_username(self):
