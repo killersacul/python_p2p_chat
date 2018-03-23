@@ -103,23 +103,23 @@ class P2pChat(tk.Frame):
         done_button = tk.Button(chat_connection_frame)
         done_button["text"] = "connect"
         args = []
-        args.append(ip_entry.get())
-        args.append(port_entry.get())
-        args.append(username_entry.get())
+        self.ip_entry = ip_entry
+        self.port_entry = port_entry
+        self.username_entry = username_entry
         done_button["command"] = partial(self.close_window_and_call_function,
-                                             args, chat_connection_window)
+                                         chat_connection_window)
         done_button.grid(row=1, column=2)
         self.port_entry = port_entry
 
-    def close_window_and_call_function(self, args, frame):
+    def close_window_and_call_function(self, frame):
         frame.destroy()
-        print(args)
-        self.client = Client(self, args[0], args[1], args[2])
+        self.client = Client(self, self.ip_entry.get(),
+                             self.port_entry.get(), self.username_entry.get())
 
     def create_room_user_list(self, users=[]):
         self.clean_frame_widgets(self.room_user_list_frame)
         users = [{"name": "les cons"}, {"name": "god is just really dog spelled backwards"}, {"name": "alexis"},
-                 {"name": "jerem"}, {"name": "lothare"}]
+                 {"name": "jerem"}, {"name": "lothaire"}]
         for user in users:
             user_label = tk.Label(self.room_user_list_frame,
                                   text=str(user["name"]), anchor="w")
@@ -141,7 +141,7 @@ class P2pChat(tk.Frame):
         for widget in frame.winfo_children():
             widget.destroy()
 
-    def close_app(self):
+    def close_app(self, Event=None):
         print("close")
         self.client.destroy()
         root.destroy()
