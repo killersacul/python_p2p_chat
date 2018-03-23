@@ -21,6 +21,8 @@ class P2pChat(tk.Frame):
     def create_mainmenu(self):
         menubar = tk.Menu(self)
         menu = tk.Menu(menubar, tearoff=0)
+        menu.add_command(label="Connect to chat",
+                         command=self.connect_to_server_window)
         menu.add_command(label="Change Username", command=self.change_username)
         menu.add_separator()
         menu.add_command(label="Exit", command=self.close_app)
@@ -33,8 +35,9 @@ class P2pChat(tk.Frame):
                              fill=tk.Y, expand=0)
         self.room_list_frame = room_list_frame
         self.create_room_list()
-        create_room_frame = tk.LabelFrame(room_list_frame, text="Create new room",
-                                          width="130", bd=3, bg="blue")
+        create_room_frame = tk.LabelFrame(room_list_frame,
+                                          text="Create new room",
+                                          width="130", bd=3)
         create_room_frame.pack(side=tk.BOTTOM, fill=tk.X, expand=0)
         self.create_room_frame = create_room_frame
         room_name_entry = tk.Entry(create_room_frame)
@@ -73,8 +76,45 @@ class P2pChat(tk.Frame):
         master = self.master
         master.bind('<Return>', self.send_message_to_chat)
         master.bind('<KP_Enter>', self.send_message_to_chat)
+        master.bind('<Escape>', self.close_app)
 
         master.update()
+
+    def connect_to_server_window(self):
+        chat_connection_window = tk.Toplevel(root)
+        chat_connection_window.wm_title("connect to server directly")
+        chat_connection_frame = tk.Frame(chat_connection_window)
+        chat_connection_frame.grid(row=0, column=0)
+        ip_label = tk.Label(chat_connection_frame, text="IP:")
+        ip_label.grid(row=0, column=0)
+        ip_entry = tk.Entry(chat_connection_frame)
+        ip_entry.insert(0, "127.0.0.1")
+        ip_entry.grid(row=0, column=1)
+        self.ip_entry = ip_entry
+        port_label = tk.Label(chat_connection_frame, text="PORT:")
+        port_label.grid(row=0, column=2)
+        port_entry = tk.Entry(chat_connection_frame)
+        port_entry.insert(0, 40000)
+        port_entry.grid(row=0, column=3)
+        username_label = tk.Label(chat_connection_frame, text="USERNAME:")
+        username_label.grid(row=0, column=4)
+        username_entry = tk.Entry(chat_connection_frame)
+        username_entry.grid(row=0, column=5)
+        done_button = tk.Button(chat_connection_frame)
+        done_button["text"] = "connect"
+        args = []
+        args.append(ip_entry.get())
+        args.append(port_entry.get())
+        args.append(username_entry.get())
+        done_button["command"] = partial(self.close_window_and_call_function,
+                                             args, chat_connection_window)
+        done_button.grid(row=1, column=2)
+        self.port_entry = port_entry
+
+    def close_window_and_call_function(self, args, frame):
+        frame.destroy()
+        print(args)
+        self.client = Client(self, args[0], args[1], args[2])
 
     def create_room_user_list(self, users=[]):
         self.clean_frame_widgets(self.room_user_list_frame)
@@ -105,35 +145,6 @@ class P2pChat(tk.Frame):
         print("close")
         self.client.destroy()
         root.destroy()
-
-    def connect_to_chat_window(self):
-        chat_connection_window = tk.Toplevel(root)
-        chat_connection_window.wm_title("connect to chat directly")
-        chat_connection_frame = tk.Frame(chat_connection_window)
-        chat_connection_frame.grid(row=0, column=0)
-        ip_label = tk.Label(chat_connection_frame, text="IP:")
-        ip_label.grid(row=0, column=0)
-        ip_entry = tk.Entry(chat_connection_frame)
-        ip_entry.insert(0, "127.0.0.1")
-        ip_entry.grid(row=0, column=1)
-        self.ip_entry = ip_entry
-        port_label = tk.Label(chat_connection_frame, text="PORT:")
-        port_label.grid(row=0, column=2)
-        port_entry = tk.Entry(chat_connection_frame)
-        port_entry.insert(0, 40000)
-        port_entry.grid(row=0, column=3)
-        done_button = tk.Button(chat_connection_frame)
-        done_button["text"] = "connect"
-        args = []
-        args.append(ip_entry.get())
-        args.append(port_entry.get())
-        done_button["command"] = partial(self.close_window_and_call_function,
-                                         args, chat_connection_window,
-                                         "self.client.connect_to_chat")
-        done_button.grid(row=1, column=2)
-        self.port_entry = port_entry
-
-        print("connecting to chat")
 
     def change_username(self):
         temp = simpledialog.askstring("Input", "what is you new username",
