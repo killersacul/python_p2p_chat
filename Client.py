@@ -7,6 +7,7 @@ class Client:
     users = []
     server = ()
     p2pclient = []
+    my_rooms = []
     def __init__(self, p2p_chat, host="127.0.0.1", port=10049, username=None):
         self.username = username
         self.server = (host, port)
@@ -28,22 +29,6 @@ class Client:
         ths2 = threading.Thread(target=self.server_user)
         ths2.start()
 
-
-    def listen_connection(self):
-        print("listen")
-        while True:
-            # self.s.listen(5)
-            sock, addr = self.s.accept()
-            if addr[0] == "127.0.0.1" & addr[1] == server[1]:
-                ths = threading.Thread(target=self.recv_handler_server,
-                                       kwargs={'sock': sock})
-                ths.start()
-            else:
-                print("user reac_handler")
-                th = threading.Thread(target=self.recv_handler,
-                                      kwargs={'sock': sock})
-                th.start()
-        self.s.close()
 
     def recv_handler_server(self):
         tmp = ""
@@ -84,6 +69,7 @@ class Client:
 
 
     def send_message_user(self, type_message, data):
+        self.send_data(self.s, "list_of_room", [None])
         for user in self.p2pclient:
             user.send(data.encode())
 
@@ -98,9 +84,9 @@ class Client:
         print("connect to room" + str(room))
 
     def create_new_room(self, room_name):
-        self.my_rooms.append(server_room(room_name, self.username))
+        self.my_rooms.append(Server_room(room_name, self.username))
         self.my_rooms[-1].info
-        self.send_data(sock, "new_room", self.my_rooms[-1].room)
+        self.send_data(self.s, "new_room", self.my_rooms[-1].info)
         print("creating room :" + str(self.my_rooms[-1].info))
 
     def connect_to_room_generale(self, room):
@@ -119,15 +105,15 @@ class Client:
 
         colback()
 
-    def destroy(self):
-        print("destroy")
-        self.s.close()
-        self.su.close()
-        pass
-
     def send_data(self, sock, type_message, array):
         data = {}
         data["message"] = type_message
         data["data"] = array
-        print("send_data: " + str(data) + " to " + str(type_message))
+        print("send_data: " + str(data) + " to " + str(type_message) + "for"+ str(sock))
         sock.send(json.dumps(data).encode("utf-8"))
+
+    def destroy(self):
+        print("destroy")
+        # self.s.close()
+        self.su.close()
+        pass

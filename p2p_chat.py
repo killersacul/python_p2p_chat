@@ -108,7 +108,7 @@ class P2pChat(tk.Frame):
         print(self.port_var.get())
         self.client = Client(self, self.ip_var.get(),
                              self.port_var.get(), self.username_var.get())
-        # self.create_room_list()
+        self.create_room_list()
 
     def create_room_user_list(self, users=[]):
         self.clean_frame_widgets(self.room_user_list_frame)
@@ -136,7 +136,8 @@ class P2pChat(tk.Frame):
         if self.new_room_button is not True:
             create_room_frame = tk.LabelFrame(self.room_list_frame,
                                               text="Create new room",
-                                              width="130", bd=3)
+                                              width="130", bd=3,
+                                              bg="red")
             create_room_frame.pack(side=tk.BOTTOM, fill=tk.X, expand=0)
             self.create_room_frame = create_room_frame
             room_name_entry = tk.Entry(self.create_room_frame,
